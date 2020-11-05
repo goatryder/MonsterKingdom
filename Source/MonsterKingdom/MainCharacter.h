@@ -75,10 +75,10 @@ public:
 
 	void SetMovementSpeedAndAir();
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		float RunSpeed = 600.f;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		float SprintSpeed = 950.f;
 
 
