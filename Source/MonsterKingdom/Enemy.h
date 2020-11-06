@@ -77,9 +77,34 @@ public:
 
 	void MoveToTarget();
 
-	bool bIsAttacking;
+	UPROPERTY(BlueprintReadOnly)
+		bool bIsAttacking;
 
 	UPROPERTY(EditAnywhere)
 		float MoveToTargetRadius = 10.f;
+
+	UPROPERTY(EditAnywhere)
+		bool bTargetInAttackRange;
+
+	float AttackDelayMin = 0.2f;
+	float AttackDelayMax = 0.7f;
+
+	UPROPERTY(BlueprintReadWrite)
+		bool bCanDetectDamageCollision;
+
+	void Attack();
+
+	UFUNCTION(BlueprintCallable)
+		void AttackEnded();
+
+	FTimerHandle AttackTimer;
+
+	UPROPERTY(EditAnywhere)
+		UAnimMontage* CombatMontage;
+
+	float Health = 100.f;
+
+	void ApplyDamage();
+	void DisposeEnemy();
 
 };

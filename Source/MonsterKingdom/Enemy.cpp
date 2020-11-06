@@ -11,6 +11,7 @@
 #include "MainCharacter.h"
 #include "Animation/AnimInstance.h"
 
+#include "TimerManager.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -82,6 +83,92 @@ void AEnemy::MoveToTarget()
 
 }
 
+void AEnemy::Attack()
+{
+
+	if (!IsAlive)
+		return;
+
+	if (bIsAttacking)
+		return;
+
+	bIsAttacking = true;
+	// bCanDetectDamageCollision = true; // resolved in anim bp on attack activate animNotify
+
+	if (AI_Controller)
+		AI_Controller->StopMovement();
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (AnimInstance && CombatMontage) {
+
+		AnimInstance->Montage_Play(CombatMontage, FMath::FRandRange(0.9f, 1.9f));
+		AnimInstance->Montage_JumpToSection(TEXT("Attack"), CombatMontage);
+	}
+}
+
+void AEnemy::AttackEnded()
+{
+
+	bIsAttacking = false;
+
+	bCanDetectDamageCollision = false;
+
+	if (TargetChar) {
+
+		if (bTargetInAttackRange) {
+
+			float AttackDelay = FMath::RandRange(AttackDelayMin, AttackDelayMax);
+			GetWorldTimerManager().SetTimer(AttackTimer, this, &AEnemy::Attack, AttackDelay);
+
+		}
+		else {
+
+			MoveToTarget();
+		}
+
+
+	}
+	else {
+
+		bTargetInAttackRange = false;
+
+	}
+
+}
+
+void AEnemy::ApplyDamage()
+{
+
+	UE_LOG(LogTemp, Warning, TEXT("void AEnemy::ApplyDamage()"));
+
+	Health -= 20.f;
+
+	if (Health <= 0.f) {
+
+		if (AI_Controller)
+			AI_Controller->StopMovement();
+
+		IsAlive = false;
+
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+		if (AnimInstance)
+			AnimInstance->Montage_Stop(0.2f);
+
+		GetWorldTimerManager().SetTimer(AttackTimer, this, &AEnemy::DisposeEnemy, 2.f);
+
+	}
+
+}
+
+void AEnemy::DisposeEnemy()
+{
+
+	Destroy();
+
+}
+
 void AEnemy::DetectSphereOnBeginOverlap(UPrimitiveComponent* OverlapComp, AActor* OtherActor, 
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, 
 	bool bFromSweep, const FHitResult& SweepResult)
@@ -130,6 +217,17 @@ void AEnemy::CombatSphereOnBeginOverlap(UPrimitiveComponent* OverlapComp, AActor
 	if (!IsAlive)
 		return;
 
+	AMainCharacter* MyChar = Cast<AMainCharacter>(OtherActor);
+
+	if (MyChar) {
+
+		bTargetInAttackRange = true;
+
+		float AttackDelay = FMath::RandRange(AttackDelayMin, AttackDelayMax);
+		GetWorldTimerManager().SetTimer(AttackTimer, this, &AEnemy::Attack, AttackDelay);
+
+	}
+
 }
 
 void AEnemy::CombatSphereOnEndOverlap(UPrimitiveComponent* OverlapComp, AActor* OtherActor, 
@@ -138,6 +236,14 @@ void AEnemy::CombatSphereOnEndOverlap(UPrimitiveComponent* OverlapComp, AActor* 
 
 	if (!IsAlive)
 		return;
+
+	AMainCharacter* MyChar = Cast<AMainCharacter>(OtherActor);
+
+	if (MyChar) {
+
+		bTargetInAttackRange = false;
+
+	}
 
 }
 
@@ -149,6 +255,19 @@ void AEnemy::AttackHitBoxOnBeginOverlap(UPrimitiveComponent* OverlapComp, AActor
 	if (!IsAlive)
 		return;
 
+	if (bCanDetectDamageCollision) {
+
+		AMainCharacter* MyChar = Cast<AMainCharacter>(OtherActor);
+
+		if (MyChar) {
+
+			bCanDetectDamageCollision = false;
+
+			UE_LOG(LogTemp, Warning, TEXT("Collided With Player"));
+
+		}
+
+	}
 }
 
 void AEnemy::AttackHitBoxOnEndOverlap(UPrimitiveComponent* OverlapComp, AActor* OtherActor, 

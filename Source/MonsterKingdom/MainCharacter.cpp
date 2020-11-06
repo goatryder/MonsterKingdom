@@ -18,7 +18,7 @@
 #include "Kismet/GameplayStatics.h"
 
 #include "Weapon.h"
-//#include Enemy.h
+#include "Enemy.h"
 
 
 // Sets default values
@@ -165,13 +165,21 @@ void AMainCharacter::Attack()
 	if (!IsAlive)
 		return;
 
+	if (bIsAttacking)
+		return;
+
+	if (GetCharacterMovement()->Velocity.Size() > 0.5f)
+		return;
+
 	if (Weapon) {
 
 		UAnimInstance* MyAnim = GetMesh()->GetAnimInstance();
 
 		if (MyAnim && CombatMontage) {
 
-			MyAnim->Montage_Play(CombatMontage, 2.5f);
+			bIsAttacking = true; // disabled in anim bp
+
+			MyAnim->Montage_Play(CombatMontage, FMath::FRandRange(1.4f, 2.4f));
 
 			int min = 0;
 			int max = 2;
@@ -190,7 +198,7 @@ void AMainCharacter::Attack()
 
 			}
 
-
+			// CanDetectDamageCollision = true; // resolved in anim bp with anim notify
 		}
 
 	}
@@ -219,6 +227,28 @@ void AMainCharacter::EquipWeapon(AWeapon* WeaponActor)
 	Weapon = WeaponActor;
 
 	// add on component begin overlap for hit box
+	Weapon->AttackHitBox->OnComponentBeginOverlap.AddDynamic(this, &AMainCharacter::DamageBoxOnBeginOverlap);
+
+}
+
+void AMainCharacter::DamageBoxOnBeginOverlap(UPrimitiveComponent* OverlapComp, AActor* OtherActor, 
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, 
+	bool bFromSweep, const FHitResult& SweepResult)
+{
+
+	if (CanDetectDamageCollision) {
+
+		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
+
+		if (Enemy) {
+			
+			CanDetectDamageCollision = false; // block multipy event fire on one attack
+
+			Enemy->ApplyDamage();
+
+		}
+
+	}
 
 }
 

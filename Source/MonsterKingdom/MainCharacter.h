@@ -57,7 +57,7 @@ public:
 
 	void Attack();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool bIsAttacking;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -87,5 +87,14 @@ public:
 
 	UPROPERTY(EditAnywhere)
 		UAnimMontage* CombatMontage;
+
+	UFUNCTION()
+		virtual void DamageBoxOnBeginOverlap(UPrimitiveComponent* OverlapComp, AActor* OtherActor,
+			UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+			bool bFromSweep, const FHitResult& SweepResult);
+
+	UPROPERTY(BlueprintReadWrite)
+		bool CanDetectDamageCollision;
+
 
 };
