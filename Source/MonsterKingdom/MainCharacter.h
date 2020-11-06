@@ -9,6 +9,8 @@
 class USpringArmComponent;
 class UCameraComponent;
 class AWeapon;
+class UAnimMontage;
+
 
 UENUM(BlueprintType)
 enum class EMovementState : uint8 {
@@ -81,5 +83,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		float SprintSpeed = 950.f;
 
+	void EquipWeapon(AWeapon* WeaponActor);
+
+	UPROPERTY(EditAnywhere)
+		UAnimMontage* CombatMontage;
 
 };

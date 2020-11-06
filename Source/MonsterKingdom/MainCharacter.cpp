@@ -17,7 +17,7 @@
 
 #include "Kismet/GameplayStatics.h"
 
-//#include Weapon.h
+#include "Weapon.h"
 //#include Enemy.h
 
 
@@ -165,7 +165,35 @@ void AMainCharacter::Attack()
 	if (!IsAlive)
 		return;
 
+	if (Weapon) {
 
+		UAnimInstance* MyAnim = GetMesh()->GetAnimInstance();
+
+		if (MyAnim && CombatMontage) {
+
+			MyAnim->Montage_Play(CombatMontage, 2.5f);
+
+			int min = 0;
+			int max = 2;
+
+			int RandAnim = std::rand() % (max - min) + min;
+
+			switch (RandAnim) {
+
+				case 0:
+					MyAnim->Montage_JumpToSection(TEXT("Attack_1"));
+					break;
+
+				case 1:
+					MyAnim->Montage_JumpToSection(TEXT("Attack_2"));
+					break;
+
+			}
+
+
+		}
+
+	}
 
 }
 
@@ -177,5 +205,20 @@ void AMainCharacter::SetMovementSpeedAndAir()
 	MovementSpeed = FVector(CharSpeed.X, CharSpeed.Y, 0.f).Size();
 
 	bInAir = GetMovementComponent()->IsFalling();
+}
+
+void AMainCharacter::EquipWeapon(AWeapon* WeaponActor)
+{
+
+	// if we have weapon already do nothing
+	if (Weapon != nullptr)
+		return;
+
+	WeaponActor->AttachItemTo(GetMesh(), TEXT("RightHandSocket"));
+
+	Weapon = WeaponActor;
+
+	// add on component begin overlap for hit box
+
 }
 
