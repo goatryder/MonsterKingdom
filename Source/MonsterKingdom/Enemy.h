@@ -11,6 +11,8 @@ class UBoxComponent;
 class AMainCharacter;
 class UAnimMontage;
 class AAIController;
+class UParticleSystemComponent;
+class UAudioComponent;
 
 
 UCLASS()
@@ -102,9 +104,25 @@ public:
 	UPROPERTY(EditAnywhere)
 		UAnimMontage* CombatMontage;
 
-	float Health = 100.f;
+	UPROPERTY(EditAnywhere)
+		float Health = 100.f;
 
-	void ApplyDamage();
-	void DisposeEnemy();
+	UPROPERTY(EditAnywhere)
+		float Damage = 20.f;
+
+	UFUNCTION(BlueprintCallable)
+		bool ApplyDamage(float AppliedDamage);
+	
+	UFUNCTION(BlueprintCallable)
+		void DisposeEnemy();
+
+	UPROPERTY(EditAnywhere)
+		UAudioComponent* HitSound;
+
+	UPROPERTY(EditAnywhere)
+		UParticleSystemComponent* HitFX;
+
+	UFUNCTION(BlueprintCallable)
+		void PlayHitEffects();
 
 };

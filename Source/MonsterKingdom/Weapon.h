@@ -70,6 +70,15 @@ public:
 		UAudioComponent* PickSound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UAudioComponent* CritSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UAudioComponent* AttackSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UParticleSystemComponent* CritFX;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		USphereComponent* SpherePickFXDetector;
 	
 	void AttachItemTo(USkeletalMeshComponent* meshRoot, FName socket);
@@ -88,5 +97,29 @@ public:
 			UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 			bool bSweepFrom, const FHitResult& SweepResult);
 
+	// Damage Block
+
+	UPROPERTY(BlueprintReadOnly)
+		bool bCritDamage;
+
+	UPROPERTY(EditAnywhere)
+		float BaseDamage = 20.f;
+
+	UPROPERTY(EditAnywhere)
+		float CritDamageFactorMin = 1.4f;
+
+	UPROPERTY(EditAnywhere)
+		float CritDamageFactorMax = 1.8f;
+
+	UPROPERTY(EditAnywhere)
+		float CritDamageChance = 0.25f;
+
+	UFUNCTION(BlueprintCallable)
+		float CalcDamage();
+
+	UFUNCTION(BlueprintCallable)
+		void TryPlayCritEffects();
+
+	//
 
 };

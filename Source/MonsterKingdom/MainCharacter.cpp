@@ -244,11 +244,34 @@ void AMainCharacter::DamageBoxOnBeginOverlap(UPrimitiveComponent* OverlapComp, A
 			
 			CanDetectDamageCollision = false; // block multipy event fire on one attack
 
-			Enemy->ApplyDamage();
+			Enemy->ApplyDamage(Weapon->CalcDamage());
 
 		}
 
 	}
+
+}
+
+bool AMainCharacter::ApplyDamage(float AppliedDamage)
+{
+
+	Health -= AppliedDamage;
+
+	// UE_LOG(LogTemp, Warning, TEXT("Applied %f Damage To Main Character, Health: %f"), AppliedDamage, Health);
+
+	if (Health <= 0.f) {
+
+		IsAlive = false;
+
+		// UE_LOG(LogTemp, Warning, TEXT("void AMainCharacter::ApplyDamage PLAYER IsAlive=false"));
+
+		// todo restart game
+	
+		return true;
+	
+	}
+
+	return false;
 
 }
 

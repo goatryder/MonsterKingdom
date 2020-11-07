@@ -6,6 +6,9 @@
 #include "Components/SphereComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/AudioComponent.h"
+
+#include "Particles/ParticleSystemComponent.h"
 
 #include "AIModule/Classes/AIController.h"
 #include "MainCharacter.h"
@@ -29,6 +32,15 @@ AEnemy::AEnemy()
 
 	AttackHitBox = CreateDefaultSubobject<UBoxComponent>(TEXT("AttackHitBox"));
 	AttackHitBox->SetupAttachment(GetMesh(), TEXT("HitboxSocket"));
+
+	HitSound = CreateDefaultSubobject<UAudioComponent>(TEXT("HitSound"));
+	HitSound->SetupAttachment(RootComponent);
+	HitSound->SetAutoActivate(false);
+
+	HitFX = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("HitFX"));
+	HitFX->SetupAttachment(GetMesh(), TEXT("headSocket"));
+	HitFX->SetAutoActivate(false);
+
 ;}
 
 // Called when the game starts or when spawned
@@ -137,12 +149,15 @@ void AEnemy::AttackEnded()
 
 }
 
-void AEnemy::ApplyDamage()
+bool AEnemy::ApplyDamage(float AppliedDamage)
 {
 
-	UE_LOG(LogTemp, Warning, TEXT("void AEnemy::ApplyDamage()"));
+	Health -= AppliedDamage;
 
-	Health -= 20.f;
+	// UE_LOG(LogTemp, Warning, TEXT("Applied %f Damage To Enemy, Health: %f"), AppliedDamage, Health);
+
+	PlayHitEffects();
+
 
 	if (Health <= 0.f) {
 
@@ -158,7 +173,10 @@ void AEnemy::ApplyDamage()
 
 		GetWorldTimerManager().SetTimer(AttackTimer, this, &AEnemy::DisposeEnemy, 2.f);
 
+		return true;
 	}
+
+	return false;
 
 }
 
@@ -166,6 +184,14 @@ void AEnemy::DisposeEnemy()
 {
 
 	Destroy();
+
+}
+
+void AEnemy::PlayHitEffects()
+{
+
+	HitSound->Play();
+	HitFX->Activate(true);
 
 }
 
@@ -263,7 +289,8 @@ void AEnemy::AttackHitBoxOnBeginOverlap(UPrimitiveComponent* OverlapComp, AActor
 
 			bCanDetectDamageCollision = false;
 
-			UE_LOG(LogTemp, Warning, TEXT("Collided With Player"));
+			if (MyChar->ApplyDamage(Damage))
+				TargetChar = nullptr;
 
 		}
 

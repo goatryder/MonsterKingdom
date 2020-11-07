@@ -38,6 +38,18 @@ AWeapon::AWeapon()
 	PickSound->SetupAttachment(RootComponent);
 	PickSound->SetAutoActivate(false);
 
+	CritSound = CreateDefaultSubobject<UAudioComponent>(TEXT("CritSound"));
+	CritSound->SetupAttachment(RootComponent);
+	CritSound->SetAutoActivate(false);
+
+	CritFX = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("CritFX"));
+	CritFX->SetupAttachment(RootComponent);
+	CritFX->SetAutoActivate(false);
+
+	AttackSound = CreateDefaultSubobject<UAudioComponent>(TEXT("AttackSound"));
+	AttackSound->SetupAttachment(RootComponent);
+	AttackSound->SetAutoActivate(false);
+
 	SpherePickFXDetector = CreateDefaultSubobject<USphereComponent>(TEXT("PickFXDetector"));
 	SpherePickFXDetector->SetupAttachment(RootComponent);
 	SpherePickFXDetector->SetSphereRadius(400.f);
@@ -161,10 +173,9 @@ void AWeapon::OnSpherePickFXDetectorOverlap(UPrimitiveComponent* OverlapComp, AA
 	if (OtherActor != UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))
 		return;
 
-	if (!PickSound->IsPlaying())
-		PickSound->Play();
+	// UE_LOG(LogTemp, Warning, TEXT("Weapon PickFX Sphere Overlap"));
 
-	//if (!PickFX->IsActive())
+	PickSound->Play();
 	PickFX->Activate(true);
 
 }
@@ -180,10 +191,9 @@ void AWeapon::OnSpherePickFXDetectorEndOverlap(UPrimitiveComponent* OverlapComp,
 	if (OtherActor != UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))
 		return;
 
-	if (PickSound->IsPlaying())
-		PickSound->Stop();
+	// UE_LOG(LogTemp, Warning, TEXT("Weapon PickFX Sphere Overlap END"));
 
-	//if (PickFX->IsActive())
+	PickSound->Stop();
 	PickFX->Deactivate();
 
 }
@@ -221,6 +231,48 @@ void AWeapon::OnSphereCollisionOverlapBegin(UPrimitiveComponent* OverlapComp, AA
 		return;
 
 	PlayerChar->EquipWeapon(this);
+
+}
+
+float AWeapon::CalcDamage()
+{
+
+	float Damage = BaseDamage;
+
+	float Rand = FMath::FRandRange(0.f, 1.f);
+
+	// UE_LOG(LogTemp, Warning, TEXT("Rand Num For Crit: %f"), Rand);
+
+	if (Rand < CritDamageChance) {
+
+		Damage *= FMath::FRandRange(CritDamageFactorMin, CritDamageFactorMax);
+
+		bCritDamage = true;
+
+		// UE_LOG(LogTemp, Warning, TEXT("Crit Damage!!! %f, Base Damage Was: %f"), Damage, BaseDamage);
+		
+		// Critical Damage FX
+
+		// CritSound->Play();
+		// CritFX->Activate(true);
+		
+	}
+
+
+	return Damage;
+}
+
+void AWeapon::TryPlayCritEffects()
+{
+
+	if (bCritDamage) {
+
+		CritSound->Play();
+		CritFX->Activate(true);
+
+		bCritDamage = false;
+
+	}
 
 }
 

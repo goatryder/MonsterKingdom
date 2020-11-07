@@ -96,5 +96,10 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 		bool CanDetectDamageCollision;
 
+	UPROPERTY(EditAnywhere)
+		float Health = 100.f;
+
+	UFUNCTION(BlueprintCallable)
+		bool ApplyDamage(float AppliedDamage);
 
 };
