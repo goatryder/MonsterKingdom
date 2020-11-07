@@ -14,7 +14,6 @@
 #include "MainCharacter.h"
 #include "Animation/AnimInstance.h"
 
-#include "TimerManager.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -149,17 +148,21 @@ void AEnemy::AttackEnded()
 
 }
 
-bool AEnemy::ApplyDamage(float AppliedDamage)
+bool AEnemy::ApplyDamage(float AppliedDamage, bool Crit)
 {
 
-	Health -= AppliedDamage;
+	EnemyHitDelegate.Broadcast(AppliedDamage, Crit);
 
-	// UE_LOG(LogTemp, Warning, TEXT("Applied %f Damage To Enemy, Health: %f"), AppliedDamage, Health);
+	CurrentHealth -= AppliedDamage;
+
+	//bIsCritted = Crit;
+
+	UE_LOG(LogTemp, Warning, TEXT("Applied %f Damage To Enemy, IsCrit: %s"), AppliedDamage, Crit ? *FString("True") : *FString("False"));
 
 	PlayHitEffects();
 
 
-	if (Health <= 0.f) {
+	if (CurrentHealth <= 0.f) {
 
 		if (AI_Controller)
 			AI_Controller->StopMovement();
@@ -172,6 +175,8 @@ bool AEnemy::ApplyDamage(float AppliedDamage)
 			AnimInstance->Montage_Stop(0.2f);
 
 		GetWorldTimerManager().SetTimer(AttackTimer, this, &AEnemy::DisposeEnemy, 2.f);
+
+		
 
 		return true;
 	}

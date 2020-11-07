@@ -112,7 +112,7 @@ public:
 		float CritDamageFactorMax = 1.8f;
 
 	UPROPERTY(EditAnywhere)
-		float CritDamageChance = 0.25f;
+		float CritDamageChance = 0.5f;
 
 	UFUNCTION(BlueprintCallable)
 		float CalcDamage();

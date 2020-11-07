@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "Enemy.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FEnemyGetHitSignature, float, HitDamage, bool, CritHit);
+
 class USphereComponent;
 class UBoxComponent;
 class AMainCharacter;
@@ -15,7 +17,7 @@ class UParticleSystemComponent;
 class UAudioComponent;
 
 
-UCLASS()
+UCLASS(BlueprintType, Blueprintable)
 class MONSTERKINGDOM_API AEnemy : public ACharacter
 {
 	GENERATED_BODY()
@@ -23,6 +25,9 @@ class MONSTERKINGDOM_API AEnemy : public ACharacter
 public:
 	// Sets default values for this character's properties
 	AEnemy();
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, meta = (DisplayName = "OnEnemyHit"))
+		FEnemyGetHitSignature EnemyHitDelegate;
 
 protected:
 	// Called when the game starts or when spawned
@@ -104,14 +109,17 @@ public:
 	UPROPERTY(EditAnywhere)
 		UAnimMontage* CombatMontage;
 
-	UPROPERTY(EditAnywhere)
-		float Health = 100.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float HealthMax = 100.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float CurrentHealth = HealthMax;
 
 	UPROPERTY(EditAnywhere)
 		float Damage = 20.f;
 
 	UFUNCTION(BlueprintCallable)
-		bool ApplyDamage(float AppliedDamage);
+		bool ApplyDamage(float AppliedDamage, bool Crit);
 	
 	UFUNCTION(BlueprintCallable)
 		void DisposeEnemy();
@@ -124,5 +132,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void PlayHitEffects();
+
+	//UPROPERTY(BlueprintReadOnly)
+	//	bool bIsCritted;
 
 };

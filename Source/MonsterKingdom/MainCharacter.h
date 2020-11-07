@@ -96,10 +96,15 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 		bool CanDetectDamageCollision;
 
-	UPROPERTY(EditAnywhere)
-		float Health = 100.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float HealthMax = 100.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float CurrentHealth = HealthMax;
 
 	UFUNCTION(BlueprintCallable)
 		bool ApplyDamage(float AppliedDamage);
+
+	void RestartGame();
 
 };

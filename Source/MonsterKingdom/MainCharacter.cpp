@@ -14,6 +14,8 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/InputComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/PrimitiveComponent.h"
 
 #include "Kismet/GameplayStatics.h"
 
@@ -240,12 +242,19 @@ void AMainCharacter::DamageBoxOnBeginOverlap(UPrimitiveComponent* OverlapComp, A
 
 		AEnemy* Enemy = Cast<AEnemy>(OtherActor);
 
-		if (Enemy) {
+		//UCapsuleComponent* CombatSphere = Cast<UCapsuleComponent>(OtherComp);
+
+		//if (CombatSphere)
+		//	UE_LOG(LogTemp, Warning, TEXT("DamageBoxBeginOverlap, Enemy Comp is Capsule Component = %s"), 
+		//		CombatSphere == Enemy->GetCapsuleComponent() ? *FString("True") : *FString("False"));
+
+		if (Enemy && Enemy->IsAlive) {
 			
 			CanDetectDamageCollision = false; // block multipy event fire on one attack
 
-			Enemy->ApplyDamage(Weapon->CalcDamage());
+			Enemy->ApplyDamage(Weapon->CalcDamage(), Weapon->bCritDamage);
 
+			Weapon->TryPlayCritEffects();
 		}
 
 	}
@@ -255,23 +264,36 @@ void AMainCharacter::DamageBoxOnBeginOverlap(UPrimitiveComponent* OverlapComp, A
 bool AMainCharacter::ApplyDamage(float AppliedDamage)
 {
 
-	Health -= AppliedDamage;
+	if (!IsAlive)
+		return false;
+
+	CurrentHealth -= AppliedDamage;
 
 	// UE_LOG(LogTemp, Warning, TEXT("Applied %f Damage To Main Character, Health: %f"), AppliedDamage, Health);
 
-	if (Health <= 0.f) {
+	if (CurrentHealth <= 0.f) {
 
 		IsAlive = false;
 
 		// UE_LOG(LogTemp, Warning, TEXT("void AMainCharacter::ApplyDamage PLAYER IsAlive=false"));
 
 		// todo restart game
-	
+		
+		FTimerHandle TimerHandle;
+		GetWorldTimerManager().SetTimer(TimerHandle, this, &AMainCharacter::RestartGame, 3.f);
+
 		return true;
 	
 	}
 
 	return false;
+
+}
+
+void AMainCharacter::RestartGame()
+{
+
+	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()), false);
 
 }
 

@@ -173,9 +173,11 @@ void AWeapon::OnSpherePickFXDetectorOverlap(UPrimitiveComponent* OverlapComp, AA
 	if (OtherActor != UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))
 		return;
 
-	// UE_LOG(LogTemp, Warning, TEXT("Weapon PickFX Sphere Overlap"));
+	UE_LOG(LogTemp, Warning, TEXT("Weapon PickFX Sphere Overlap"));
 
-	PickSound->Play();
+	if (!PickSound->IsPlaying())
+		PickSound->Play();
+	
 	PickFX->Activate(true);
 
 }
@@ -191,7 +193,7 @@ void AWeapon::OnSpherePickFXDetectorEndOverlap(UPrimitiveComponent* OverlapComp,
 	if (OtherActor != UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))
 		return;
 
-	// UE_LOG(LogTemp, Warning, TEXT("Weapon PickFX Sphere Overlap END"));
+	UE_LOG(LogTemp, Warning, TEXT("Weapon PickFX Sphere Overlap END"));
 
 	PickSound->Stop();
 	PickFX->Deactivate();
@@ -237,29 +239,20 @@ void AWeapon::OnSphereCollisionOverlapBegin(UPrimitiveComponent* OverlapComp, AA
 float AWeapon::CalcDamage()
 {
 
-	float Damage = BaseDamage;
+	bCritDamage = FMath::FRandRange(0.f, 1.f) < CritDamageChance;
 
-	float Rand = FMath::FRandRange(0.f, 1.f);
+	if (bCritDamage) {
 
-	// UE_LOG(LogTemp, Warning, TEXT("Rand Num For Crit: %f"), Rand);
-
-	if (Rand < CritDamageChance) {
-
-		Damage *= FMath::FRandRange(CritDamageFactorMin, CritDamageFactorMax);
-
-		bCritDamage = true;
-
-		// UE_LOG(LogTemp, Warning, TEXT("Crit Damage!!! %f, Base Damage Was: %f"), Damage, BaseDamage);
-		
-		// Critical Damage FX
-
-		// CritSound->Play();
-		// CritFX->Activate(true);
+		return BaseDamage * FMath::FRandRange(CritDamageFactorMin, CritDamageFactorMax);
 		
 	}
 
+	else {
 
-	return Damage;
+		return BaseDamage;
+	}
+
+	
 }
 
 void AWeapon::TryPlayCritEffects()
@@ -269,8 +262,6 @@ void AWeapon::TryPlayCritEffects()
 
 		CritSound->Play();
 		CritFX->Activate(true);
-
-		bCritDamage = false;
 
 	}
 
