@@ -125,7 +125,7 @@ void AEnemy::AttackEnded()
 
 	bCanDetectDamageCollision = false;
 
-	if (TargetChar) {
+	if (TargetChar && TargetChar->IsAlive) {
 
 		if (bTargetInAttackRange) {
 
@@ -174,7 +174,7 @@ bool AEnemy::ApplyDamage(float AppliedDamage, bool Crit)
 		if (AnimInstance)
 			AnimInstance->Montage_Stop(0.2f);
 
-		GetWorldTimerManager().SetTimer(AttackTimer, this, &AEnemy::DisposeEnemy, 2.f);
+		GetWorldTimerManager().SetTimer(AttackTimer, this, &AEnemy::DisposeEnemy, 3.f);
 
 		
 
@@ -290,7 +290,7 @@ void AEnemy::AttackHitBoxOnBeginOverlap(UPrimitiveComponent* OverlapComp, AActor
 
 		AMainCharacter* MyChar = Cast<AMainCharacter>(OtherActor);
 
-		if (MyChar) {
+		if (MyChar && MyChar->IsAlive) {
 
 			bCanDetectDamageCollision = false;
 
